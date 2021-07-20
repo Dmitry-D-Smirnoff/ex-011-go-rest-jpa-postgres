@@ -1,11 +1,11 @@
 package model
 
 import (
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/jinzhu/gorm"
-	"os"
-	"github.com/joho/godotenv"
 	"fmt"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/joho/godotenv"
+	"os"
 )
 
 var db *gorm.DB //база данных
