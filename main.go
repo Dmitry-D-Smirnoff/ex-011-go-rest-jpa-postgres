@@ -2,6 +2,7 @@ package main
 
 import (
 	"./app"
+	"./controller"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -12,6 +13,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) // добавляем middleware проверки JWT-токена
+
+	router.HandleFunc("/api/user/new", controller.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/user/login", controller.Authenticate).Methods("POST")
+	router.HandleFunc("/api/contacts/new", controller.CreateContact).Methods("POST")
+	router.HandleFunc("/api/me/contacts", controller.GetContactsFor).Methods("GET")
 
 	port := os.Getenv("PORT") //Получить порт из файла .env; мы не указали порт, поэтому при локальном тестировании должна возвращаться пустая строка
 	if port == "" {
