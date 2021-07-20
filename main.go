@@ -18,6 +18,7 @@ func main() {
 	router.HandleFunc("/api/user/login", controller.Authenticate).Methods("POST")
 	router.HandleFunc("/api/contacts/new", controller.CreateContact).Methods("POST")
 	router.HandleFunc("/api/me/contacts", controller.GetContactsFor).Methods("GET")
+	router.NotFoundHandler = http.HandlerFunc(app.HandleNotFound)
 
 	port := os.Getenv("PORT") //Получить порт из файла .env; мы не указали порт, поэтому при локальном тестировании должна возвращаться пустая строка
 	if port == "" {
