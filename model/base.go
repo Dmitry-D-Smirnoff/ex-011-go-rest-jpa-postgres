@@ -25,11 +25,11 @@ func init() {
 
 	dbUri := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password) //Создать строку подключения
 	fmt.Println(dbUri)
-
+/*
 	gorm.DefaultTableNameHandler = func(a *gorm.DB, b string) string {
 		return "example011." + b
 	}
-
+*/
 	conn, err := gorm.Open("postgres", dbUri)
 	if err != nil {
 		fmt.Print(err)
