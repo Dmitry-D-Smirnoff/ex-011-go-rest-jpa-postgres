@@ -1,7 +1,7 @@
 package model
 
 import (
-	u "../util"
+	u "ex-011-go-web-jpa-postgres/util"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"

@@ -1,9 +1,9 @@
 package app
 
 import (
-	"../model"
-	u "../util"
 	"context"
+	"ex-011-go-web-jpa-postgres/model"
+	u "ex-011-go-web-jpa-postgres/util"
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"net/http"

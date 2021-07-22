@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"../model"
-	u "../util"
 	"encoding/json"
+	"ex-011-go-web-jpa-postgres/model"
+	u "ex-011-go-web-jpa-postgres/util"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"

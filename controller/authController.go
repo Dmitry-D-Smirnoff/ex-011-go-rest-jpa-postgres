@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"net/http"
-	u "../util"
-	"../model"
 	"encoding/json"
+	"ex-011-go-web-jpa-postgres/model"
+	u "ex-011-go-web-jpa-postgres/util"
+	"net/http"
 )
 
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {

@@ -1,7 +1,7 @@
 package model
 
 import (
-	u "../util"
+	u "ex-011-go-web-jpa-postgres/util"
 	"fmt"
 	"github.com/jinzhu/gorm"
 )
