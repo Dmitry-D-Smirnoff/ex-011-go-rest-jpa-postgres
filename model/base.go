@@ -22,7 +22,6 @@ func init() {
 	dbName := os.Getenv("db_name")
 	dbHost := os.Getenv("db_host")
 
-
 	dbUri := fmt.Sprintf("host=%s user=%s dbname=%s password=%s", dbHost, username, dbName, password) //Создать строку подключения
 	fmt.Println(dbUri)
 
