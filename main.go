@@ -1,16 +1,52 @@
 package main
 
 import (
+	"context"
 	"ex-011-go-web-jpa-postgres/app"
 	"ex-011-go-web-jpa-postgres/controller"
 	"fmt"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"net/http"
 	"os"
 )
 
+type Trainer struct {
+	Name string
+	Age  int
+	City string
+}
 
 func main() {
+
+	// Create client
+	client, err := mongo.NewClient(options.Client().
+		ApplyURI(os.Getenv("mongodb_uri")))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create connect
+	err = client.Connect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Check the connection
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB!")
+
+	collection := client.Database("test").Collection("persons")
+
+	fmt.Println(collection)
+
+
 
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) // добавляем middleware проверки JWT-токена
@@ -25,7 +61,7 @@ func main() {
 	if port == "" {
 		port = "8000" //localhost
 	}
-	err := http.ListenAndServe(":" + port, router) //Запустите приложение, посетите localhost:8000/api
+	err = http.ListenAndServe(":" + port, router) //Запустите приложение, посетите localhost:8000/api
 
 	if err != nil {
 		fmt.Print(err)
