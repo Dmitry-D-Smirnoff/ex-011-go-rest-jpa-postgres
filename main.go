@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"os"
 )
 
 
@@ -20,15 +19,8 @@ func main() {
 	router.HandleFunc("/api/contacts/new", controller.CreateContact).Methods("POST")
 	router.HandleFunc("/api/me/contacts/{id}", controller.GetContactsFor).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(app.HandleNotFound)
-
-	port := os.Getenv("PORT") //Получить порт из файла .env; мы не указали порт, поэтому при локальном тестировании должна возвращаться пустая строка
-	if port == "" {
-		port = "8000" //localhost
-	}
-
-	fmt.Println(port)
-
-	err := http.ListenAndServe(":" + port, router) //Запустите приложение, посетите localhost:8000/api
+	
+	err := http.ListenAndServe(":8000", router) //Запустите приложение, посетите localhost:8000/api
 
 	if err != nil {
 		fmt.Print(err)
