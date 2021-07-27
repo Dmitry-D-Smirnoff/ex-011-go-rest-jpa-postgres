@@ -19,6 +19,15 @@ type Trainer struct {
 	City string
 }
 
+func disconnectMongoDB(client *mongo.Client){
+	err := client.Disconnect(context.TODO())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connection to MongoDB closed.")
+}
+
 func main() {
 
 	// Create client
@@ -33,6 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer disconnectMongoDB(client)
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
@@ -41,12 +51,23 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB!")
+	collection := client.Database("ex-011-database").Collection("trainers")
 
-	collection := client.Database("test").Collection("persons")
+	ash := Trainer{"Ash", 10, "Pallet Town"}
+	misty := Trainer{"Misty", 10, "Cerulean City"}
+	brock := Trainer{"Brock", 15, "Pewter City"}
+	insertResult, err := collection.InsertOne(context.TODO(), ash)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 
-	fmt.Println(collection)
-
-
+	trainers := []interface{}{misty, brock}
+	insertManyResult, err := collection.InsertMany(context.TODO(), trainers)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Inserted multiple documents: ", insertManyResult.InsertedIDs)
 
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) // добавляем middleware проверки JWT-токена
