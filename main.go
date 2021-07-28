@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"net/http"
 	"os"
 )
@@ -24,51 +23,61 @@ func disconnectMongoDB(client *mongo.Client){
 	err := client.Disconnect(context.TODO())
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Println("Connection to MongoDB closed.")
 }
 
-func main() {
-
+func connectMongoDB() (client *mongo.Client){
 	// Create client
 	client, err := mongo.NewClient(options.Client().
 		ApplyURI(os.Getenv("mongodb_uri")))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
-
 	// Create connect
 	err = client.Connect(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
-	defer disconnectMongoDB(client)
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Println("Connected to MongoDB!")
 
-	collection := client.Database("ex-011-database").Collection("trainers")
-	ash := Trainer{"Ash", 10, "Pallet Town"}
-	misty := Trainer{"Misty", 10, "Cerulean City"}
-	brock := Trainer{"Brock", 10, "Pewter City"}
+	return client
+}
 
-	insertResult, err := collection.InsertOne(context.TODO(), ash)
-	if err != nil {
-		log.Fatal(err)
+func InsertTrainers(collection *mongo.Collection, trainers []Trainer){
+	trainersInterface := make([]interface{}, len(trainers))
+	for i, v := range trainers {
+		trainersInterface[i] = v
 	}
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 
-	trainers := []interface{}{misty, brock}
-	insertManyResult, err := collection.InsertMany(context.TODO(), trainers)
+	insertManyResult, err := collection.InsertMany(context.TODO(), trainersInterface)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Println("Inserted multiple documents: ", insertManyResult.InsertedIDs)
+
+}
+
+func main() {
+
+	client := connectMongoDB()
+	defer disconnectMongoDB(client)
+
+	collection := client.Database("ex-011-database").Collection("trainers")
+
+	trainers := []Trainer{
+		{"Ash", 10, "Pallet Town"},
+		{"Misty", 10, "Cerulean City"},
+		{"Brock", 10, "Pewter City"},
+	}
+	InsertTrainers(collection, trainers)
 
 	updateFilter := bson.D{{"name", "Ash"}}
 	update := bson.D{
@@ -78,7 +87,7 @@ func main() {
 	}
 	updateResult, err := collection.UpdateOne(context.TODO(), updateFilter, update)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 
@@ -86,7 +95,7 @@ func main() {
 	var result Trainer
 	err = collection.FindOne(context.TODO(), updateFilter).Decode(&result)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Printf("Found a single document: %+v\n", result)
 
@@ -100,7 +109,7 @@ func main() {
 	// Passing nil as the filter matches all documents in the collection
 	cur, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	// Finding multiple documents returns a cursor
 	// Iterating through the cursor allows us to decode documents one at a time
@@ -109,12 +118,12 @@ func main() {
 		var elem Trainer
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		results = append(results, &elem)
 	}
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	// Close the cursor once finished
 	cur.Close(context.TODO())
@@ -123,7 +132,7 @@ func main() {
 	deleteFilter := bson.D{{"age", 10}}
 	deleteResult, err := collection.DeleteMany(context.TODO(), deleteFilter)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	fmt.Printf("Deleted %v documents in the trainers collection\n", deleteResult.DeletedCount)
 
