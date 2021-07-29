@@ -4,96 +4,43 @@ import (
 	"context"
 	"ex-011-go-web-jpa-postgres/app"
 	"ex-011-go-web-jpa-postgres/controller"
+	"ex-011-go-web-jpa-postgres/model"
 	"fmt"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"os"
+	"time"
 )
-
-type Trainer struct {
-	Name string
-	Age  int
-	City string
-}
-
-func disconnectMongoDB(client *mongo.Client){
-	err := client.Disconnect(context.TODO())
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Connection to MongoDB closed.")
-}
-
-func connectMongoDB() (client *mongo.Client){
-	// Create client
-	client, err := mongo.NewClient(options.Client().
-		ApplyURI(os.Getenv("mongodb_uri")))
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Create connect
-	err = client.Connect(context.TODO())
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Connected to MongoDB!")
-
-	return client
-}
-
-func InsertTrainers(collection *mongo.Collection, trainers []Trainer){
-	trainersInterface := make([]interface{}, len(trainers))
-	for i, v := range trainers {
-		trainersInterface[i] = v
-	}
-
-	insertManyResult, err := collection.InsertMany(context.TODO(), trainersInterface)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Inserted multiple documents: ", insertManyResult.InsertedIDs)
-
-}
 
 func main() {
 
-	client := connectMongoDB()
-	defer disconnectMongoDB(client)
+	model.ConnectMongoDB()
+	defer model.DisconnectMongoDB()
 
-	collection := client.Database("ex-011-database").Collection("trainers")
+	collection := model.GetLogCollection()
 
-	trainers := []Trainer{
-		{"Ash", 10, "Pallet Town"},
-		{"Misty", 10, "Cerulean City"},
-		{"Brock", 10, "Pewter City"},
+	logs := []model.LogEntry{
+		{"Create", "Contact", "NewYork", primitive.NewDateTimeFromTime(time.Now())},
+		{"Update", "Contact", "London", primitive.NewDateTimeFromTime(time.Now())},
+		{"Create", "Account", "Jenny", primitive.NewDateTimeFromTime(time.Now())},
 	}
-	InsertTrainers(collection, trainers)
+	model.InsertManyLogEntries(logs)
 
-	updateFilter := bson.D{{"name", "Ash"}}
-	update := bson.D{
-		{"$inc", bson.D{
-			{"age", 1},
-		}},
-	}
-	updateResult, err := collection.UpdateOne(context.TODO(), updateFilter, update)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	model.InsertOneLogEntry(model.LogEntry{
+		Operation:  "Update",
+		AppEntity:  "Account",
+		EntityName: "Jenny",
+		CreateDate: primitive.NewDateTimeFromTime(time.Now()),
+	})
+
+	updateTo := model.UpdateLogDetails("entity_name", "London", "York")
 
 	// create a value into which the result can be decoded
-	var result Trainer
-	err = collection.FindOne(context.TODO(), updateFilter).Decode(&result)
+	var result model.LogEntry
+	err := collection.FindOne(context.TODO(), updateTo).Decode(&result)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -105,7 +52,7 @@ func main() {
 	options.SetLimit(20)
 	filter := bson.M{}
 	// Here's an array in which you can store the decoded documents
-	var results []*Trainer
+	var results []*model.LogEntry
 	// Passing nil as the filter matches all documents in the collection
 	cur, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
@@ -115,7 +62,7 @@ func main() {
 	// Iterating through the cursor allows us to decode documents one at a time
 	for cur.Next(context.TODO()) {
 		// create a value into which the single document can be decoded
-		var elem Trainer
+		var elem model.LogEntry
 		err := cur.Decode(&elem)
 		if err != nil {
 			fmt.Println(err)
@@ -129,12 +76,12 @@ func main() {
 	cur.Close(context.TODO())
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", results)
 
-	deleteFilter := bson.D{{"age", 10}}
+	deleteFilter := bson.D{{"operation", "Create"}}
 	deleteResult, err := collection.DeleteMany(context.TODO(), deleteFilter)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Deleted %v documents in the trainers collection\n", deleteResult.DeletedCount)
+	fmt.Printf("Deleted %v documents in the logEntries collection\n", deleteResult.DeletedCount)
 
 
 
