@@ -27,7 +27,6 @@ func GetLogCollection() (collection *mongo.Collection){
 		//TODO: Ping and if fails -> Disconnect/Connect again
 		//currentClient.Ping(context.TODO(),???)
 	}
-
 	//TODO: Environmental variables for Database and Log collection
 	return currentClient.Database("ex-011-database").Collection("logEntries")
 }
