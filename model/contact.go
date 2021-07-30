@@ -4,6 +4,8 @@ import (
 	u "ex-011-go-web-jpa-postgres/util"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type Contact struct {
@@ -45,6 +47,14 @@ func (contact *Contact) Create() (map[string] interface{}) {
 
 	resp := u.Message(true, "success")
 	resp["contact"] = contact
+
+	InsertOneLogEntry(LogEntry{
+		Operation:  "Create",
+		AppEntity:  "Contact",
+		EntityName: contact.Name,
+		CreateDate: primitive.NewDateTimeFromTime(time.Now()),
+	})
+
 	return resp
 }
 

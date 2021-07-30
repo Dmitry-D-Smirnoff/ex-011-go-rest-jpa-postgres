@@ -4,9 +4,11 @@ import (
 	u "ex-011-go-web-jpa-postgres/util"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strings"
+	"time"
 )
 
 /*
@@ -76,6 +78,14 @@ func (account *Account) Create() (map[string] interface{}) {
 
 	response := u.Message(true, "Account has been created")
 	response["account"] = account
+
+	InsertOneLogEntry(LogEntry{
+		Operation:  "Create",
+		AppEntity:  "Account",
+		EntityName: account.Email,
+		CreateDate: primitive.NewDateTimeFromTime(time.Now()),
+	})
+
 	return response
 }
 

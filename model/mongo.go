@@ -111,10 +111,11 @@ func FindOneLogEntry(criteria primitive.D) LogEntry {
 	return result
 }
 
-func FindManyLogEntries(criteria bson.M, limit int64) []*LogEntry {
+func FindLastLogEntries(criteria bson.M, limit int64) []*LogEntry {
 	// Pass these options to the Find method
 	options := options.Find()
 	options.SetLimit(limit)
+	options.SetSort(bson.D{{"_id", -1}})
 	// Here's an array in which you can store the decoded documents
 	var results []*LogEntry
 	// Passing nil as the filter matches all documents in the collection
