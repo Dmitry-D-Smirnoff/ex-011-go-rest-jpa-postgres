@@ -100,5 +100,54 @@ func UpdateLogDetails(mongoKey string, oldValue string, newValue string) primiti
 	return updateTo
 }
 
+func FindOneLogEntry(criteria primitive.D) LogEntry {
+	// create a value into which the result can be decoded
+	var result LogEntry
+	err := GetLogCollection().FindOne(context.TODO(), criteria).Decode(&result)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Found a single document: %+v\n", result)
+	return result
+}
 
+func FindManyLogEntries(criteria bson.M, limit int64) []*LogEntry {
+	// Pass these options to the Find method
+	options := options.Find()
+	options.SetLimit(limit)
+	// Here's an array in which you can store the decoded documents
+	var results []*LogEntry
+	// Passing nil as the filter matches all documents in the collection
+	cur, err := GetLogCollection().Find(context.TODO(), criteria, options)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Finding multiple documents returns a cursor
+	// Iterating through the cursor allows us to decode documents one at a time
+	for cur.Next(context.TODO()) {
+		// create a value into which the single document can be decoded
+		var elem LogEntry
+		err := cur.Decode(&elem)
+		if err != nil {
+			fmt.Println(err)
+		}
+		results = append(results, &elem)
+	}
+	if err := cur.Err(); err != nil {
+		fmt.Println(err)
+	}
+	// Close the cursor once finished
+	cur.Close(context.TODO())
+	fmt.Printf("Found multiple documents (array of pointers): %+v\n", results)
+	return results
+}
+
+func DeleteManyLogEntries(criteria bson.M) *mongo.DeleteResult {
+	deleteResult, err := GetLogCollection().DeleteMany(context.TODO(), criteria)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Deleted %v documents in the logEntries collection\n", deleteResult.DeletedCount)
+	return deleteResult
+}
 
