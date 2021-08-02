@@ -6,9 +6,20 @@ import (
 	"ex-011-go-web-jpa-postgres/model"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"os"
 )
+
+func init() {
+	// Loads the .env file using godotenv.
+	// Throws an error is the file cannot be found.
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+}
+
 
 func main() {
 	model.ConnectMongoDB()
@@ -26,7 +37,7 @@ func main() {
 
 	port := os.Getenv("PORT") //Получить порт из файла .env; мы не указали порт, поэтому при локальном тестировании должна возвращаться пустая строка
 	if port == "" {
-		port = "8000" //localhost
+		port = "8011" //localhost
 	}
 	err := http.ListenAndServe(":" + port, router) //Запустите приложение, посетите localhost:8000/api
 	if err != nil {
